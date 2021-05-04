@@ -8,7 +8,8 @@
 #include "Followers.h"
 #include "Image.h"
 #include "ArtistSimple.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class Artist : public ArtistSimple
 {

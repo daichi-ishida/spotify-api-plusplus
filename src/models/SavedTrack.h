@@ -4,7 +4,8 @@
 #include <string>
 #include <memory>
 #include "Track.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 
 class SavedTrack

@@ -7,7 +7,8 @@
 #include <memory>
 #include "TrackLink.h"
 #include "Artist.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class TrackSimple
 {

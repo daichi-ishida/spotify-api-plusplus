@@ -22,7 +22,8 @@ class SpotifyAPI
 public:
     SpotifyAPI();
 
-    void setAuthToken(std::string authToken);
+    void setAuthToken(std::string _authToken);
+    void setAuthToken(std::string _client_id, std::string _client_secret);
 
     std::shared_ptr<Album> GetAlbum(std::string albumId, options_t options = options_t());
 
@@ -164,6 +165,7 @@ public:
 
 private:
     std::string authToken;
+    size_t token_expires_in;
 };
 
 

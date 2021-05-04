@@ -2,7 +2,8 @@
 #define SPOTIFY_PLUSPLUS_CURSOR_H
 
 #include <string>
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class Cursor
 {

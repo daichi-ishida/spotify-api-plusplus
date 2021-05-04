@@ -1,16 +1,23 @@
 #include <iostream>
 #include "SpotifyAPI.h"
 #include <curl/curl.h>
-#include <utils/CurlUtils.h>
+#include "utils/CurlUtils.h"
 
 SpotifyAPI::SpotifyAPI()
 {
     curl_global_init( CURL_GLOBAL_ALL );
 }
 
-void SpotifyAPI::setAuthToken(std::string authToken)
+void SpotifyAPI::setAuthToken(std::string _authToken)
 {
-    this->authToken = authToken;
+    this->authToken = _authToken;
+}
+
+void SpotifyAPI::setAuthToken(std::string _client_id, std::string _client_secret)
+{
+    json j = RequestToken(_client_id, _client_secret);
+    this->authToken = j["access_token"];
+    this->token_expires_in = j["expires_in"];
 }
 
 std::shared_ptr<Album> SpotifyAPI::GetAlbum(std::string albumId, options_t options)

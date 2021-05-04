@@ -3,7 +3,8 @@
 
 #include <string>
 #include "Album.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class SavedAlbum
 {

@@ -5,7 +5,8 @@
 #include <memory>
 #include <vector>
 #include "Image.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class Category
 {

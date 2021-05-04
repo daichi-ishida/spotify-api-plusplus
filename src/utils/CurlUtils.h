@@ -3,9 +3,17 @@
 
 #include <curl/curl.h>
 #include "../models/Error.h"
-#include "json.h"
+#include <nlohmann/json.hpp>
 #include "CurlException.h"
-#include "SpotifyException.h"
+
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/insert_linebreaks.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+#include <boost/archive/iterators/ostream_iterator.hpp>
+#include <sstream>
+#include <cstdlib>
+
+using json = nlohmann::json;
 
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -24,7 +32,32 @@ std::string ReplaceAll(std::string str, const std::string& from, const std::stri
     return str;
 }
 
-nlohmann::json SpotifyCurlInternal(std::string request, std::string endpoint, std::map<std::string, std::string> options, std::string authToken, std::string body)
+const std::string encodeClientCode(const std::string &client_id, const std::string &client_secret)
+{
+    using namespace boost::archive::iterators;
+
+    const std::string client_code = client_id + ":" + client_secret;
+
+    std::stringstream os;
+    typedef base64_from_binary<    // convert binary values to base64 characters
+                transform_width<   // retrieve 6 bit integers from a sequence of 8 bit bytes
+                    const char *,
+                    6,
+                    8
+                >
+            > 
+            base64_text; // compose all the above operations in to a new iterator
+
+    std::copy(
+        base64_text(client_code.c_str()),
+        base64_text(client_code.c_str() + client_code.size()),
+        ostream_iterator<char>(os)
+    );
+
+    return "Authorization: Basic " + os.str() + "=";
+}
+
+nlohmann::json RequestToken(const std::string &client_id, const std::string &client_secret)
 {
     CURL * curl;
 
@@ -32,7 +65,45 @@ nlohmann::json SpotifyCurlInternal(std::string request, std::string endpoint, st
     if(!curl)
     {
         std::cerr << "Could not initiate cURL" << std::endl;
-        return curl;
+        std::exit(1);
+    }
+
+    std::string url = "https://accounts.spotify.com/api/token";
+
+    std::string readBuffer;
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);  // Can't authenticate the certificate, so disable authentication.
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+    std::string header = encodeClientCode(client_id, client_secret);
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, header.c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+
+    int rc = curl_easy_perform(curl);
+    if (rc != CURLE_OK)
+        throw CurlException(rc);
+
+    curl_easy_cleanup(curl);
+    if(readBuffer.empty())
+        return nlohmann::json();
+    return nlohmann::json::parse(readBuffer);
+}
+
+nlohmann::json SpotifyCurlInternal(const std::string &request, const std::string &endpoint, const std::map<std::string, std::string> &options, const std::string &authToken, const std::string &body)
+{
+    CURL * curl;
+
+    curl = curl_easy_init ( ) ;
+    if(!curl)
+    {
+        std::cerr << "Could not initiate cURL" << std::endl;
+        std::exit(1);
     }
 
     std::string url = "https://api.spotify.com" + endpoint;
@@ -45,6 +116,7 @@ nlohmann::json SpotifyCurlInternal(std::string request, std::string endpoint, st
         }
     }
     url = ReplaceAll(url, " ", "%20");
+    url = ReplaceAll(url, ",", "%2C");
 
     std::string readBuffer;
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -68,38 +140,33 @@ nlohmann::json SpotifyCurlInternal(std::string request, std::string endpoint, st
     if (rc != CURLE_OK)
         throw CurlException(rc);
 
-    long statusCode = 0;
-    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &statusCode);
-    if(statusCode < 200 || statusCode > 204)
-        throw SpotifyException(Error(nlohmann::json::parse(readBuffer)["error"]));
-
     curl_easy_cleanup(curl);
     if(readBuffer.empty())
         return nlohmann::json();
     return nlohmann::json::parse(readBuffer);
 }
 
-nlohmann::json SpotifyGET(std::string endpoint, std::map<std::string, std::string> options, std::string authToken, std::string body = "")
+nlohmann::json SpotifyGET(const std::string &endpoint, const std::map<std::string, std::string> &options, const std::string &authToken, std::string body = "")
 {
     return SpotifyCurlInternal("GET", endpoint, options, authToken, body);
 }
 
-nlohmann::json SpotifyPUT(std::string endpoint, std::map<std::string, std::string> options, std::string authToken, std::string body = "")
+nlohmann::json SpotifyPUT(const std::string &endpoint, const std::map<std::string, std::string> &options, const std::string &authToken, std::string body = "")
 {
    return SpotifyCurlInternal("PUT", endpoint, options, authToken, body);
 }
 
-nlohmann::json SpotifyDELETE(std::string endpoint, std::map<std::string, std::string> options, std::string authToken, std::string body = "")
+nlohmann::json SpotifyDELETE(const std::string &endpoint, const std::map<std::string, std::string> &options, const std::string &authToken, std::string body = "")
 {
     return SpotifyCurlInternal("DELETE", endpoint, options, authToken, body);
 }
 
-nlohmann::json SpotifyPOST(std::string endpoint, std::map<std::string, std::string> options, std::string authToken, std::string body = "")
+nlohmann::json SpotifyPOST(const std::string &endpoint, const std::map<std::string, std::string> &options, const std::string &authToken, std::string body = "")
 {
     return SpotifyCurlInternal("POST", endpoint, options, authToken, body);
 }
 
-std::string VectorJoin(std::vector<std::string> vector)
+std::string VectorJoin(const std::vector<std::string> &vector)
 {
     std::stringstream ss;
     for(size_t i = 0; i < vector.size(); ++i)

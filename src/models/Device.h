@@ -1,7 +1,8 @@
 #ifndef SPOTIFY_API_PLUSPLUS_DEVICE_H
 #define SPOTIFY_API_PLUSPLUS_DEVICE_H
 
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class Device
 {

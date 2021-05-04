@@ -17,7 +17,7 @@ public:
         std::string message = errorStream.str();
 
         char* what = (char *) calloc(message.length(), sizeof(char));
-        strcpy(what, message.c_str());
+        strcpy_s(what, message.length(), message.c_str());
         return what;
     }
 

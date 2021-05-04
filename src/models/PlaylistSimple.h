@@ -10,7 +10,8 @@
 #include "User.h"
 #include "PlaylistTrack.h"
 #include "Pager.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class PlaylistSimple
 {

@@ -5,7 +5,8 @@
 #include <memory>
 #include "RecommendationsSeed.h"
 #include "Track.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class Recommendations
 {

@@ -43,10 +43,5 @@ CTestTestfile.cmake
 *.exe
 *.out
 *.app
-Testing/
 build/
-cmake-build-debug/
-spotify-api-plusplus.cbp
-refresh_token.txt
-client_secret.txt
-client_id.txt
+.vscode/

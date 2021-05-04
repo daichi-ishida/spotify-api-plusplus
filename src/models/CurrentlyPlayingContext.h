@@ -4,7 +4,8 @@
 #include "Context.h"
 #include "Device.h"
 #include "Track.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class CurrentlyPlayingContext
 {

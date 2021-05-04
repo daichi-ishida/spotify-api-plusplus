@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 #include "Cursor.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 
 template <class T> class CursorPager

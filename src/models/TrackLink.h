@@ -1,7 +1,8 @@
 #ifndef SPOTIFY_PLUSPLUS_TRACKLINK_H
 #define SPOTIFY_PLUSPLUS_TRACKLINK_H
 
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class TrackLink
 {

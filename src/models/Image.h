@@ -2,8 +2,8 @@
 #define SPOTIFY_PLUSPLUS_IMAGE_H
 
 #include <string>
-#include "../utils/json.h"
-
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class Image
 {

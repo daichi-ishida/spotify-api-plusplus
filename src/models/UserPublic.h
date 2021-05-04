@@ -7,7 +7,8 @@
 #include <memory>
 #include "Followers.h"
 #include "Image.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class UserPublic
 {

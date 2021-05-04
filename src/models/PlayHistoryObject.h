@@ -3,7 +3,8 @@
 
 #include "Context.h"
 #include "TrackSimple.h"
-#include "../utils/json.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 class PlayHistoryObject
 {
